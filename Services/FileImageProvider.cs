@@ -49,7 +49,8 @@ namespace photo_api.Services
             }
         }
         public void CreateThumbnail(ImageSummary summary)
-        {              
+        {        
+            _log.LogInformation($"Create thumbnail for {summary.Id}");      
             using(var inStream = File.OpenRead(GetPath(ImageType.FullImage, summary.Id)))
             using(var outStream = File.OpenWrite(GetPath(ImageType.Thumbnail, summary.Id)))
             using(var image = Image.Load<Rgba32>(inStream))

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Amazon.S3;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using photo_api.Models;
@@ -15,8 +16,9 @@ namespace photo_api.Controllers
         private ILogger<ImageController> _logger;
         private IImageProvider _imageProvider;
 
-        public ImageController(ILoggerFactory loggerFactory, ILogger<ImageController> logger)
+        public ImageController(IAmazonS3 s3Client, ILoggerFactory loggerFactory, ILogger<ImageController> logger)
         {
+            _logger.LogInformation("ImageController created");
             _logger = logger;
             _imageProvider = new FileImageProvider(loggerFactory);
         }

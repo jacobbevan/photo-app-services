@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Amazon.S3;
 
 namespace photo_api
 {
@@ -23,7 +24,11 @@ namespace photo_api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var options = Configuration.GetAWSOptions();
+            IAmazonS3 client = options.CreateServiceClient<IAmazonS3>();
             services.AddMvc();
+            //services.AddDefaultAWSOptions(Configuration.GetAWSOptions());
+            //services.AddAWSService<IAmazonS3>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -35,6 +40,7 @@ namespace photo_api
             }
 
             app.UseMvc();
+    
         }
     }
 }

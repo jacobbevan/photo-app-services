@@ -6,7 +6,6 @@ using System.Linq;
 using System;
 using SixLabors.ImageSharp;
 using SixLabors.Primitives;
-
 using System.IO;
 
 namespace photo_api.Services
@@ -20,7 +19,6 @@ namespace photo_api.Services
         {
             _log = loggerFactory.CreateLogger(this.GetType().Name);
             _imageSummaries = LoadSummaries();
-            CreateThumbnails(_imageSummaries);
         }
 
         private IList<ImageSummary> LoadSummaries()
@@ -36,9 +34,9 @@ namespace photo_api.Services
                 }).ToList();
         }
 
-        public IEnumerable<ImageSummary> GetImageSummaries()
+        public Task<IEnumerable<ImageSummary>> GetImageSummaries()
         {
-            return _imageSummaries;
+            return Task.FromResult((IEnumerable<ImageSummary>)_imageSummaries);
         }
         
         public void CreateThumbnails(IEnumerable<ImageSummary> summaries)
@@ -48,23 +46,14 @@ namespace photo_api.Services
                 CreateThumbnail(item);
             }
         }
+
         public void CreateThumbnail(ImageSummary summary)
         {        
             _log.LogInformation($"Create thumbnail for {summary.Id}");      
             using(var inStream = File.OpenRead(GetPath(ImageType.FullImage, summary.Id)))
             using(var outStream = File.OpenWrite(GetPath(ImageType.Thumbnail, summary.Id)))
-            using(var image = Image.Load<Rgba32>(inStream))
             {
-                var side = Math.Min(image.Height, image.Width);
-                var cropRect = new Rectangle
-                {
-                    X = (image.Width - side)/2,
-                    Y = (image.Height - side)/2,
-                    Width = side,
-                    Height = side
-                };
-                image.Mutate(x=>x.Crop(cropRect).Resize(150,150));
-                image.SaveAsJpeg(outStream);
+                ImageTransform.WriteThumbnail(inStream, outStream);
             }
         }
 
@@ -78,5 +67,26 @@ namespace photo_api.Services
             return $"{IMAGE_ROOT}/{imageType.ToString()}/{id}";
         }
 
-   }
+        public Task ReIndex()
+        {
+            CreateThumbnails(_imageSummaries);
+            return Task.FromResult(true);
+        }
+
+        public async Task<ImageSummary> PutImage(byte[] fileContent, string fileName, string contentType, string folder)
+        {
+            var path = GetPath(ImageType.FullImage, fileName);
+            await File.WriteAllBytesAsync(path, fileContent);
+            
+            var summary = new  ImageSummary
+            {
+                Caption = string.Empty,
+                Id = fileName,
+            };
+
+            _imageSummaries.Add(summary);
+            CreateThumbnail(summary);
+            return summary;
+        }
+    }
 }

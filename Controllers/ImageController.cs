@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Amazon.S3;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using photo_api.Models;
@@ -10,26 +12,29 @@ using photo_api.Services;
 
 namespace photo_api.Controllers
 {
-    [Route("api/images")]
+    [Route(ImageController.API_ROUTE)]
     public class ImageController : Controller
     {
+        public const string API_ROUTE = "api";
         private ILogger<ImageController> _logger;
         private IImageProvider _imageProvider;
 
-        public ImageController(IAmazonS3 s3Client, ILoggerFactory loggerFactory, ILogger<ImageController> logger)
+        public ImageController(IImageProvider imageProvider, IAmazonS3 s3Client, ILoggerFactory loggerFactory, ILogger<ImageController> logger)
         {
-            _logger.LogInformation("ImageController created");
+
             _logger = logger;
-            _imageProvider = new FileImageProvider(loggerFactory);
+            _logger.LogInformation("ImageController created");
+            _imageProvider = imageProvider;
         }
 
-        [HttpGet]
-        public IEnumerable<ImageSummary> Get()
+        [HttpGet("images")]
+        public async Task<IEnumerable<ImageSummary>> GetImageSummaries()
         {
-            return _imageProvider.GetImageSummaries();
+            var results = await _imageProvider.GetImageSummaries();
+            return results.Select(s=>EnrichUris(s));
         }
 
-        [HttpGet("Thumbnail/{id}")]
+        [HttpGet("images/Thumbnail/{id}")]
         public async Task<IActionResult> GetThumb(string id)
         {
             _logger.LogInformation($"GetThumb {id}");
@@ -43,7 +48,7 @@ namespace photo_api.Controllers
 
         }
 
-        [HttpGet("FullImage/{id}")]
+        [HttpGet("images/FullImage/{id}")]
         public async Task<IActionResult> GetFull(string id)
         {
             if(id == null)
@@ -54,11 +59,31 @@ namespace photo_api.Controllers
             return this.File(image, "image/jpeg");
         }
 
-        // POST api/values
-        [HttpPost]
-        public void Post([FromBody]string value)
+
+        [HttpGet("reindex")]
+        public Task GetReIndex()
         {
+            return _imageProvider.ReIndex();
         }
+
+        [HttpPost]
+        //[Route("/api/upload")]
+        public Task<ImageSummary> Upload(IFormFile file, string folder)
+        {
+            if (file == null) throw new Exception("File is null");
+            if (file.Length == 0) throw new Exception("File is empty");
+
+            using (Stream stream = file.OpenReadStream())
+            {
+                using (var binaryReader = new BinaryReader(stream))
+                {
+                    var fileContent = binaryReader.ReadBytes((int)file.Length);
+                    return _imageProvider.PutImage(fileContent, file.FileName, file.ContentType, folder);
+                }
+            }
+        }
+
+
 
         // PUT api/values/5
         [HttpPut("{id}")]
@@ -71,5 +96,13 @@ namespace photo_api.Controllers
         public void Delete(int id)
         {
         }
+
+        private static ImageSummary EnrichUris(ImageSummary summary)
+        {
+            summary.Thumbnail = new Uri($"{API_ROUTE}/images/Thumbnail/{summary.Id}", UriKind.Relative);
+            summary.FullImage = new Uri($"{API_ROUTE}/images/Fullimage/{summary.Id}", UriKind.Relative);
+            return summary;
+        }
+
     }
 }

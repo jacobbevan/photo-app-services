@@ -32,4 +32,4 @@ msbuild.wrn
 .vs/
 
 # Exclude any test images
-*.jpg
+*.[jJ][pP][gG]

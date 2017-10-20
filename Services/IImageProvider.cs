@@ -13,6 +13,8 @@ namespace photo_api.Services
     public interface IImageProvider
     {
         Task<byte[]> GetImage(ImageType imageType, string id);
-        IEnumerable<ImageSummary> GetImageSummaries();
+        Task<IEnumerable<ImageSummary>> GetImageSummaries();
+        Task ReIndex();
+        Task<ImageSummary> PutImage(byte[] fileContent, string fileName, string contentType, string folder);
     }
 }

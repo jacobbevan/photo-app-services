@@ -68,7 +68,7 @@ namespace photo_api.Controllers
 
         [HttpPost]
         //[Route("/api/upload")]
-        public Task<ImageSummary> Upload(IFormFile file, string folder)
+        public async Task<ImageSummary> Upload(IFormFile file, string folder)
         {
             if (file == null) throw new Exception("File is null");
             if (file.Length == 0) throw new Exception("File is empty");
@@ -78,7 +78,9 @@ namespace photo_api.Controllers
                 using (var binaryReader = new BinaryReader(stream))
                 {
                     var fileContent = binaryReader.ReadBytes((int)file.Length);
-                    return _imageProvider.PutImage(fileContent, file.FileName, file.ContentType, folder);
+                    var summary = await _imageProvider.PutImage(fileContent, file.FileName, file.ContentType, folder);
+                    EnrichUris(summary);
+                    return summary;
                 }
             }
         }

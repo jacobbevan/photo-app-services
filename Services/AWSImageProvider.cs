@@ -51,9 +51,36 @@ namespace photo_api.Services
             }
         }
 
-        public Task<ImageSummary> PutImage(byte[] fileContent, string fileName, string contentType, string folder)
-        {
-            throw new NotImplementedException();
+        public async Task<ImageSummary> PutImage(byte[] fileContent, string fileName, string contentType, string folder)
+        {            
+            _log.LogInformation($"PutImage {fileName} size {fileContent.Length} bytes, contentType {contentType}, folder {folder}");
+            var summary = new  ImageSummary
+            {
+                Caption = string.Empty,
+                Id = fileName,
+            };
+
+            using(var stream = new MemoryStream(fileContent))
+            {
+                var request = new PutObjectRequest
+                {
+                    BucketName = _options.FullImage,
+                    Key = summary.Id,
+                    ContentType = contentType,
+                    InputStream = stream
+                };
+
+                _log.LogInformation("begin put image");
+                PutObjectResponse response = await _s3client.PutObjectAsync(request);
+                _log.LogInformation("put image completes");
+            }
+
+            using(var stream = new MemoryStream(fileContent))
+            {
+                await PutThumbnail(summary, stream);
+            }
+
+            return summary;
         }
 
         public async Task ReIndex()
@@ -63,25 +90,37 @@ namespace photo_api.Services
                 //request.Metadata.Add("x-amz-meta-title", "someTitle");
                 try
                 {
-                    using(var outStream = new MemoryStream())
-                    using(var imageStream = await GetImageStream(ImageType.FullImage, item.Id))
+                    using (var imageStream = await GetImageStream(ImageType.FullImage, item.Id))
                     {
-                        var request = new PutObjectRequest
-                        {
-                            BucketName = _options.ThumbNail,
-                            Key = item.Id,
-                            ContentType = "image/jpeg",
-                            InputStream = outStream
-                        };
-
-                        ImageTransform.WriteThumbnail(imageStream, request.InputStream);
-                        PutObjectResponse response = await _s3client.PutObjectAsync(request);
+                        await PutThumbnail(item, imageStream);
                     }
                 }
                 catch(Exception ex)
                 {
                     _log.LogError(ex, $"Error building thumbnail for item {item.Id}");
                 }
+            }
+        }
+
+        private async Task PutThumbnail(ImageSummary item, MemoryStream imageStream)
+        {
+            _log.LogInformation($"PutThumbnail {item.Id}");
+            using (var outStream = new MemoryStream())
+            {
+                _log.LogInformation($"Create thumbnail");
+                ImageTransform.WriteThumbnail(imageStream, outStream);
+
+                var request = new PutObjectRequest
+                {
+                    BucketName = _options.ThumbNail,
+                    Key = item.Id,
+                    ContentType = "image/jpeg",
+                    InputStream = outStream
+                };
+
+                _log.LogInformation($"Begin S3 Put operation");
+                PutObjectResponse response = await _s3client.PutObjectAsync(request);
+                _log.LogInformation($"S3 Put operation completes");
             }
         }
 

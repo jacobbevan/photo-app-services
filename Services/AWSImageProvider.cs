@@ -132,5 +132,10 @@ namespace photo_api.Services
             stream.Position = 0;
             return stream;                
         }
+
+        public Task<IEnumerable<AlbumSummary>> GetAlbumSummaries(FilterCriteria filter)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

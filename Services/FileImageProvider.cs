@@ -15,10 +15,25 @@ namespace photo_api.Services
         private const string IMAGE_ROOT = "Images";
         private ILogger _log;
         private IList<ImageSummary> _imageSummaries;
+        private IList<AlbumSummary> _albumSummaries;
         public FileImageProvider(ILoggerFactory loggerFactory)
         {
             _log = loggerFactory.CreateLogger(this.GetType().Name);
             _imageSummaries = LoadSummaries();
+            _albumSummaries = CreateSampleAlbum(_imageSummaries).ToList();
+        }
+
+        private IEnumerable<AlbumSummary> CreateSampleAlbum(IList<ImageSummary> imageSummaries)
+        {
+            yield return new AlbumSummary 
+            {
+                Created = DateTime.Now,
+                Updated = DateTime.Now,
+                Description = "This is a sample album",
+                Id = "album1",
+                ImageIds = imageSummaries.Select(i=>i.Id).Take(3).ToList(),
+                Name = "Sample Album"
+            };
         }
 
         private IList<ImageSummary> LoadSummaries()
@@ -87,6 +102,11 @@ namespace photo_api.Services
             _imageSummaries.Add(summary);
             CreateThumbnail(summary);
             return summary;
+        }
+
+        public Task<IEnumerable<AlbumSummary>> GetAlbumSummaries(FilterCriteria filter)
+        {
+            return Task.FromResult(_albumSummaries as IEnumerable<AlbumSummary>);
         }
     }
 }

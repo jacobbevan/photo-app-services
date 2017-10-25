@@ -31,7 +31,13 @@ namespace photo_api.Controllers
         public async Task<IEnumerable<ImageSummary>> GetImageSummaries()
         {
             var results = await _imageProvider.GetImageSummaries();
-            return results.Select(s=>EnrichUris(s));
+            return results.Select(s=>EnrichImageUris(s));
+        }
+
+        [HttpGet("albums")]
+        public Task<IEnumerable<AlbumSummary>> GetAlbumSummaries([FromQuery] FilterCriteria filter)
+        {
+            return _imageProvider.GetAlbumSummaries(filter);
         }
 
         [HttpGet("images/Thumbnail/{id}")]
@@ -79,7 +85,7 @@ namespace photo_api.Controllers
                 {
                     var fileContent = binaryReader.ReadBytes((int)file.Length);
                     var summary = await _imageProvider.PutImage(fileContent, file.FileName, file.ContentType, folder);
-                    EnrichUris(summary);
+                    EnrichImageUris(summary);
                     return summary;
                 }
             }
@@ -99,7 +105,7 @@ namespace photo_api.Controllers
         {
         }
 
-        private static ImageSummary EnrichUris(ImageSummary summary)
+        private static ImageSummary EnrichImageUris(ImageSummary summary)
         {
             summary.Thumbnail = new Uri($"{API_ROUTE}/images/Thumbnail/{summary.Id}", UriKind.Relative);
             summary.FullImage = new Uri($"{API_ROUTE}/images/Fullimage/{summary.Id}", UriKind.Relative);

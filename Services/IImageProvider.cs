@@ -14,6 +14,7 @@ namespace photo_api.Services
     {
         Task<byte[]> GetImage(ImageType imageType, string id);
         Task<IEnumerable<ImageSummary>> GetImageSummaries();
+        Task<IEnumerable<AlbumSummary>> GetAlbumSummaries(FilterCriteria filter);
         Task ReIndex();
         Task<ImageSummary> PutImage(byte[] fileContent, string fileName, string contentType, string folder);
     }

@@ -3,7 +3,7 @@ using System.IO;
 using SixLabors.ImageSharp;
 using SixLabors.Primitives;
 
-namespace photo_api.Services
+namespace photo_api.Utility
 {
     public static class ImageTransform
     {

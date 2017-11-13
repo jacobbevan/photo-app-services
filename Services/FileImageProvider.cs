@@ -7,6 +7,7 @@ using System;
 using SixLabors.ImageSharp;
 using SixLabors.Primitives;
 using System.IO;
+using photo_api.Utility;
 
 namespace photo_api.Services
 {
@@ -44,14 +45,18 @@ namespace photo_api.Services
                 {
                     Caption = f.Name,
                     Id = f.Name,
-                    Thumbnail = new Uri($"{ImageType.Thumbnail}/{f.Name})", UriKind.Relative),
-                    FullImage = new Uri($"{ImageType.FullImage}/{f.Name})", UriKind.Relative),
                 }).ToList();
         }
 
-        public Task<IEnumerable<ImageSummary>> GetImageSummaries()
+        public async Task<IEnumerable<ImageSummary>> GetImageSummaries(FilterCriteria filter)
         {
-            return Task.FromResult((IEnumerable<ImageSummary>)_imageSummaries);
+            if(string.IsNullOrEmpty(filter.AlbumId))
+            {
+                return (IEnumerable<ImageSummary>)_imageSummaries;
+            }
+
+            var album = await GetAlbumSummary(filter.AlbumId);
+            return album.ImageIds.Select(i=>_imageSummaries.FirstOrDefault(j=>j.Id == i)).Where(k=>k != null).ToList();
         }
         
         public void CreateThumbnails(IEnumerable<ImageSummary> summaries)
@@ -104,9 +109,43 @@ namespace photo_api.Services
             return summary;
         }
 
-        public Task<IEnumerable<AlbumSummary>> GetAlbumSummaries(FilterCriteria filter)
+        public Task<IEnumerable<AlbumSummary>> GetAlbumSummaries()
         {
             return Task.FromResult(_albumSummaries as IEnumerable<AlbumSummary>);
+        }
+
+        public Task DeleteImage(string id)
+        {
+            _imageSummaries = _imageSummaries.Where(i=>i.Id != id).ToList();
+            foreach(var album in _albumSummaries)
+            {
+                album.ImageIds = album.ImageIds.Where(i=> i != id).ToList();
+            }
+            return Task.FromResult(true);
+        }
+
+        public Task DeleteAlbum(string id)
+        {
+            _albumSummaries = _albumSummaries.Where(i=>i.Id != id).ToList();
+            return Task.FromResult(true);
+        }
+
+        public Task UpdateAlbum(AlbumSummary value)
+        {
+            _albumSummaries = _albumSummaries.Where(a=>a.Id != value.Id).Append(value).ToList();
+            return Task.FromResult(true);
+        }
+
+        public Task<AlbumSummary> CreateAlbum(AlbumSummary value)
+        {
+            value.Id = Guid.NewGuid().ToString();
+            _albumSummaries.Add(value);
+            return Task.FromResult(value);
+        }
+
+        public Task<AlbumSummary> GetAlbumSummary(string id)
+        {
+            return Task.FromResult(_albumSummaries.Where(a=>a.Id == id).First());
         }
     }
 }

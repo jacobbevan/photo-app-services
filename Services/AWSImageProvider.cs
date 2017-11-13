@@ -7,6 +7,7 @@ using System.Linq;
 using System.IO;
 using Amazon.S3.Model;
 using System;
+using photo_api.Utility;
 
 namespace photo_api.Services
 {
@@ -31,7 +32,7 @@ namespace photo_api.Services
             }
         }
 
-        public async Task<IEnumerable<ImageSummary>> GetImageSummaries()
+        public async Task<IEnumerable<ImageSummary>> GetImageSummaries(FilterCriteria filter)
         {
             try
             {
@@ -85,7 +86,7 @@ namespace photo_api.Services
 
         public async Task ReIndex()
         {
-            foreach(var item in await GetImageSummaries())
+            foreach(var item in await GetImageSummaries(new FilterCriteria()))
             {                
                 //request.Metadata.Add("x-amz-meta-title", "someTitle");
                 try
@@ -133,7 +134,32 @@ namespace photo_api.Services
             return stream;                
         }
 
-        public Task<IEnumerable<AlbumSummary>> GetAlbumSummaries(FilterCriteria filter)
+        public Task<IEnumerable<AlbumSummary>> GetAlbumSummaries()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteImage(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteAlbum(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpdateAlbum(AlbumSummary value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<AlbumSummary> CreateAlbum(AlbumSummary value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<AlbumSummary> GetAlbumSummary(string id)
         {
             throw new NotImplementedException();
         }

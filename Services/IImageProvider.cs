@@ -13,9 +13,14 @@ namespace photo_api.Services
     public interface IImageProvider
     {
         Task<byte[]> GetImage(ImageType imageType, string id);
-        Task<IEnumerable<ImageSummary>> GetImageSummaries();
-        Task<IEnumerable<AlbumSummary>> GetAlbumSummaries(FilterCriteria filter);
+        Task<AlbumSummary> GetAlbumSummary(string id);
+        Task<IEnumerable<ImageSummary>> GetImageSummaries(FilterCriteria filter);
+        Task<IEnumerable<AlbumSummary>> GetAlbumSummaries();
         Task ReIndex();
         Task<ImageSummary> PutImage(byte[] fileContent, string fileName, string contentType, string folder);
+        Task DeleteImage(string id);
+        Task DeleteAlbum(string id);
+        Task UpdateAlbum(AlbumSummary value);
+        Task<AlbumSummary> CreateAlbum(AlbumSummary value);
     }
 }

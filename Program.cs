@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -24,6 +25,14 @@ namespace photo_api
                     l.AddConsole();
                 })
                 .UseStartup<Startup>()
+                .UseKestrel(options=>
+                {
+                    options.Listen(IPAddress.Any, 5000);
+                    // options.Listen(IPAddress.Loopback, 5001, listenOptions => 
+                    // {
+                    //     listenOptions.UseHttps("localhost.pfx");
+                    // });
+                })
                 .Build();
     }
 }

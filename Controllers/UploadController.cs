@@ -14,7 +14,7 @@ namespace photo_api.Controllers
     [Route(UploadController.API_ROUTE)]
     public class UploadController : Controller
     {
-        public const string API_ROUTE = "api";
+        public const string API_ROUTE = "api/upload";
         private ILogger<UploadController> _logger;
         private IImageProvider _imageProvider;
 

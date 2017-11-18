@@ -163,5 +163,11 @@ namespace photo_api.Services
         {
             throw new NotImplementedException();
         }
+
+        public Task UpdateImage(ImageSummary value)
+        {
+            throw new NotImplementedException();
+        }
+        
     }
 }

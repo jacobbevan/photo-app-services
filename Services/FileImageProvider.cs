@@ -147,5 +147,12 @@ namespace photo_api.Services
         {
             return Task.FromResult(_albumSummaries.Where(a=>a.Id == id).First());
         }
+
+        public Task UpdateImage(ImageSummary value)
+        {
+            _imageSummaries = _imageSummaries.Where(a=>a.Id != value.Id).Append(value).ToList();
+            return Task.FromResult(true);
+        }
+        
     }
 }

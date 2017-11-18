@@ -31,8 +31,8 @@ namespace photo_api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddDefaultTokenProviders();
+            // services.AddIdentity<ApplicationUser, IdentityRole>()
+            //     .AddDefaultTokenProviders();
             
             services.AddAuthentication().AddGoogle(googleOptions =>
             {

@@ -1,2 +1,3 @@
 eval $(minikube docker-env)
-docker build --rm -f Dockerfile -t photo-api:ist .
+kubectl config use-context minikube
+docker build --rm -f Dockerfile -t photo-app-api:ist .

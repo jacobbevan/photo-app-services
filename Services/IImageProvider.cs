@@ -21,6 +21,7 @@ namespace photo_api.Services
         Task DeleteImage(string id);
         Task DeleteAlbum(string id);
         Task UpdateAlbum(AlbumSummary value);
+        Task UpdateImage(ImageSummary value);
         Task<AlbumSummary> CreateAlbum(AlbumSummary value);
     }
 }

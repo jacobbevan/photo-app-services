@@ -1,4 +1,5 @@
 using System;
+using Amazon.DynamoDBv2;
 using Amazon.S3;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -29,7 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Func<IServiceProvider, object> factory = (s) => 
             {
                 var opts = s.GetService<IOptions<BucketOptions>>();
-                return new AWSImageProvider(opts.Value, s.GetService<IAmazonS3>(), s.GetService<ILoggerFactory>());
+                return new AWSImageProvider(opts.Value, s.GetService<IAmazonS3>(), s.GetService<IAmazonDynamoDB>(), s.GetService<ILoggerFactory>());
             };
 
             var descriptor = new ServiceDescriptor(typeof(IImageProvider), factory, ServiceLifetime.Singleton);

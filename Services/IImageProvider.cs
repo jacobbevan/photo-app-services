@@ -23,5 +23,6 @@ namespace photo_api.Services
         Task UpdateAlbum(AlbumSummary value);
         Task UpdateImage(ImageSummary value);
         Task<AlbumSummary> CreateAlbum(AlbumSummary value);
+        Task<List<SearchResult>> Search(string text);        
     }
 }

@@ -8,6 +8,7 @@ using SixLabors.ImageSharp;
 using SixLabors.Primitives;
 using System.IO;
 using photo_api.Utility;
+using System.Text.RegularExpressions;
 
 namespace photo_api.Services
 {
@@ -154,5 +155,43 @@ namespace photo_api.Services
             return Task.FromResult(true);
         }
         
+        public Task<List<SearchResult>> Search(string text)
+        {
+            var upper = text.ToUpper();
+            var matches = new List<SearchResult>();
+            foreach(var album in _albumSummaries)
+            {
+                if(album.Name.ToUpper().Contains(upper))
+                {
+                    matches.Add
+                    (
+                        new SearchResult
+                        {
+                            Id = album.Id,
+                            Type = "ALBUM",
+                            Title = album.Name
+                        }
+                    );
+                }
+            }
+
+            foreach(var image in _imageSummaries)
+            {
+                if(image.Caption.ToUpper().Contains(upper))
+                {
+                    matches.Add
+                    (
+                        new SearchResult
+                        {
+                            Id = image.Id,
+                            Type = "IMAGE",
+                            Title = image.Caption
+                        }
+                    );
+                }
+            }            
+            
+            return Task.FromResult(matches);
+        }        
     }
 }

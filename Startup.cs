@@ -13,6 +13,7 @@ using photo_api.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Rewrite;
+using Amazon.DynamoDBv2;
 
 namespace photo_api
 {
@@ -46,6 +47,7 @@ namespace photo_api
             services.AddMvc();
             services.AddDefaultAWSOptions(Configuration.GetAWSOptions());
             services.AddAWSService<IAmazonS3>();
+            services.AddAWSService<IAmazonDynamoDB>();
             services.Configure<MvcOptions>(options => 
             {
                 //options.Filters.Add(new RequireHttpsAttribute());
